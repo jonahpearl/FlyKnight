@@ -1,0 +1,18 @@
+Video direction,I:\Copulation Duration Videos
+Outpur direction,C:\Users\Crickmore\Dropbox\Copulation_Tracking_Results
+PC(i.e. ghostscript)? Y/N,Y
+Quietmode? Y/N,Y
+Print results? Y/N,Y
+Target FPS,0.075
+Channel to choose,1
+First frame to load (in video fps),100
+flysize,2
+gamma,5
+background calculation end time (s),1000
+frames to calculate background,10
+BW threshold modifier,2.5
+Area threshold for demoon,750
+Copulation distance threshold,0.17
+Copulation chain breaking threshold,1
+Copulation chain length threshold,2
+final print position,[20 20 1000 660]
