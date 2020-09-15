@@ -8,12 +8,15 @@ disp('==================================')
 disp('Plotting and Saving Data')
 
 % Determine the distance threshold of copulations
-copulation_dist_threshold = settings_file{15};
-copulation_dist_threshold = str2double(copulation_dist_threshold(strfind(copulation_dist_threshold, ',')+1:end));
+% copulation_dist_threshold = settings_file{15};
+% copulation_dist_threshold = str2double(copulation_dist_threshold(strfind(copulation_dist_threshold, ',')+1:end));
+copulation_dist_threshold = settings_file.data(10);
 
 % Find out how big the final plot is
-final_print_position = settings_file{18};
-final_print_position = str2num(final_print_position(strfind(final_print_position, ',')+1:end)); %#ok<ST2NM>
+% final_print_position = settings_file{18};
+% final_print_position = str2num(final_print_position(strfind(final_print_position, ',')+1:end)); %#ok<ST2NM>
+final_print_position = settings_file.textdata{18,2};
+final_print_position = str2num(final_print_position);
 
 % Label the video lengths with a line
 vid_cut_off_lbls = cell2mat( nframe_allvid_cell );

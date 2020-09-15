@@ -6,39 +6,44 @@ disp('==================================')
 disp('Initiation')
 
 % Label batch processing and read the batch processing parameter file 
-settings_file = importdata('flytrack_settings.csv');
+settings_file = importdata('flytrack_settings.xlsx');
 
 % General path of videos
-genvidpath = settings_file{1};
-genvidpath = genvidpath(strfind(genvidpath, ',')+1:end);
+% genvidpath = settings_file.textdata{1};
+% genvidpath = genvidpath(strfind(genvidpath, ',')+1:end);
+genvidpath = settings_file.textdata{1,2};
 
 % Export path of analysis
-export_path = settings_file{2};
-export_path = export_path(strfind(export_path, ',')+1:end);
+% export_path = settings_file.textdata{2};
+% export_path = export_path(strfind(export_path, ',')+1:end);
+export_path = settings_file.textdata{2,2};
 
 % Determine whether a computer is a PC or not
-PC_or_not = settings_file{3};
-PC_or_not = PC_or_not(strfind(PC_or_not, ',')+1:end)=='Y';
+% PC_or_not = settings_file.textdata{3};
+% PC_or_not = PC_or_not(strfind(PC_or_not, ',')+1:end)=='Y';
+PC_or_not = settings_file.textdata{3,2} == 'Y';
 
 % Determine whether the analysis will be run in quiet mode or not
-quietmode = settings_file{4};
-quietmode = quietmode(strfind(quietmode, ',')+1:end)=='Y';
+% quietmode = settings_file.textdata{4};
+% quietmode = quietmode(strfind(quietmode, ',')+1:end)=='Y';
+quietmode = settings_file.textdata{4,2} == 'Y';
 
 % Determine whether the results will be printed or not
-printresult = settings_file{5};
-printresult = printresult(strfind(printresult, ',')+1:end)=='Y';
+% printresult = settings_file.textdata{5};
+% printresult = printresult(strfind(printresult, ',')+1:end)=='Y';
+printresult = settings_file.textdata{5,2} == 'Y';
 
 % Determine the target FPS
-targetfps = settings_file{6};
-targetfps = str2double(targetfps(strfind(targetfps, ',')+1:end));
+targetfps = settings_file.data(1);
+% targetfps = str2double(targetfps(strfind(targetfps, ',')+1:end));
 
 % Determine which RGB channel to choose when tracking the videos
-channel2choose = settings_file{7};
-channel2choose = str2double(channel2choose(strfind(channel2choose, ',')+1:end));
+channel2choose = settings_file.data(2);
+% channel2choose = str2double(channel2choose(strfind(channel2choose, ',')+1:end));
 
 % Determine which frame in each video (in the video's fps to load first)
-firstframe2load = settings_file{8};
-firstframe2load = str2double(firstframe2load(strfind(firstframe2load, ',')+1:end));
+firstframe2load = settings_file.data(3);
+% firstframe2load = str2double(firstframe2load(strfind(firstframe2load, ',')+1:end));
 
 
 % Determine whether knight mode is on

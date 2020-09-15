@@ -4,16 +4,19 @@ function [ chains ] = flymatingchain( inter_fly_dist_allvid_sorted, n_arenas, FP
 %   Detailed explanation goes here
 
 % Determine the distance threshold of copulations
-copulation_dist_threshold = settings_file{15};
-copulation_dist_threshold = str2double(copulation_dist_threshold(strfind(copulation_dist_threshold, ',')+1:end));
+% copulation_dist_threshold = settings_file{15};
+% copulation_dist_threshold = str2double(copulation_dist_threshold(strfind(copulation_dist_threshold, ',')+1:end));
+copulation_dist_threshold = settings_file.data(10);
 
 % Determine the time threshold of a chain break
-chain_break_threshold = settings_file{16};
-chain_break_threshold = str2double(chain_break_threshold(strfind(chain_break_threshold, ',')+1:end));
+% chain_break_threshold = settings_file{16};
+% chain_break_threshold = str2double(chain_break_threshold(strfind(chain_break_threshold, ',')+1:end));
+chain_break_threshold = settings_file.data(11);
 
 % Determine the time threshold of a chain
-chain_length_thresh_min = settings_file{17};
-chain_length_thresh_min = str2double(chain_length_thresh_min(strfind(chain_length_thresh_min, ',')+1:end));
+% chain_length_thresh_min = settings_file{17};
+% chain_length_thresh_min = str2double(chain_length_thresh_min(strfind(chain_length_thresh_min, ',')+1:end));
+chain_length_thresh_min = settings_file.data(12);
 
 % Prime the chain cell
 chains = cell( n_arenas , 1 );

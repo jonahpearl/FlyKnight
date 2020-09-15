@@ -57,11 +57,15 @@ handles.mac=getmac;
 % end
 
 % Load the setting file
-settings_file = importdata('flytrack_settings.csv');
+% settings_file = importdata('flytrack_settings.csv');
+settings_file = importdata('flytrack_settings.xlsx');
+% settings_file = importdata('settings_file.mat');
 
 % General path of videos
-genvidpath = settings_file{1};
-handles.genvidpath = genvidpath(strfind(genvidpath, ',')+1:end);
+% genvidpath = settings_file.textdata{1};
+% handles.genvidpath = genvidpath(strfind(genvidpath, ',')+1:end);
+genvidpath = settings_file.textdata{1,2};
+handles.genvidpath = genvidpath;
 
 YesNo = evalin('base','exist(''run_list'',''var'')');
 handles.firstframe2load=100;
