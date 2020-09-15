@@ -133,6 +133,13 @@ else
     cropindex2_manual=round(position_manual(4))+round(position_manual(2));
     cropindex3_manual=round(position_manual(1));
     cropindex4_manual=round(position_manual(3))+round(position_manual(1));
+    
+    % check for bad crop indices (if user draws rectangle too close to
+    % edge)
+    if cropindex1_manual <= 0
+        fprintf('cropindex1_manual outside bounds...setting to 1 \n')
+        cropindex1_manual = 1;
+    end
 end
 
 
