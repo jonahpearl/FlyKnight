@@ -24,7 +24,7 @@ vid_cut_off_lbls = vid_cut_off_lbls * tril( ones( str2double( num_vids{ 1 } ) ) 
 
 if printresult == 1
     % Subplot plan
-    subplot_plan = [8 4 2];
+    subplot_plan = [8 4 2]; % num subplot per page, nrow, ncol
     
     % Use plots_left to keep track of how many arenas are left to plot
     plots_left = n_arenas;
@@ -54,10 +54,17 @@ if printresult == 1
                     % Plot chain
                     plot( chains{ ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num }( chain_ind , : ) , [ copulation_dist_threshold, copulation_dist_threshold ] , 'r-' )
                     
+                    % Label start and end times
+                    tEnd = chains{ ( plot_num-1 ) * subplot_plan( 1 ) + subplot_num }( chain_ind , 2 );
+                    tStart = chains{ ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num }( chain_ind,1 );
+                    text( tStart , 0.8 - 0.1*(chain_ind-1) ,...
+                        [ 'Start: ', num2str( round(10*(tStart)) / 10) , ' min' ] )
+                    text( tEnd, 0.8 - 0.1*(chain_ind-1),...
+                        [ 'End: ', num2str( round(10*(tEnd)) / 10) , ' min' ] )
+                    
                     % Write its length
                     text( 1 + ( chain_ind - 1 ) * 20 , 0.9 ,...
-                        [ num2str( round( 10 * ( chains{ ( plot_num-1 ) * subplot_plan( 1 ) + subplot_num }( chain_ind , 2 ) -...
-                        chains{ ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num }( chain_ind,1 ) ) ) / 10) , ' min' ] )
+                        [ 'Len: ', num2str( round(10*(tEnd - tStart)) / 10) , ' min' ] )
                 end
                 hold off
                 
@@ -77,7 +84,8 @@ if printresult == 1
             ylim([0 1])
             
             % Label subplot title
-            title( [ filename( 1 : end - 5 ) , 'Arena ' , num2str( ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num ) ] )
+            title( [ filename( 1 : end - 5 ) , 'Arena ' , num2str( ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num ) ],...
+                'Interpreter', 'none')
 
         end
         
