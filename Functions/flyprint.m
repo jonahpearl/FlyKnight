@@ -84,7 +84,7 @@ if printresult == 1
             ylim([0 1])
             
             % Label subplot title
-            title( [ filename( 1 : end - 5 ) , 'Arena ' , num2str( ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num ) ],...
+            title( [ filename( 1 : end - 4 ) , ', Arena ' , num2str( ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num ) ],...
                 'Interpreter', 'none')
 
         end
