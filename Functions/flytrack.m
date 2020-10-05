@@ -251,11 +251,12 @@ disp('Designation')
 
 %% Visualization
 % The positions have not been re mapped after designation.
-%{
+
 %tic
 disp('===========================================')
 disp('Visualization')
 
+%{
 marker_layer=zeros(viddim);
 for i=1:nfly
     for j=1:nframe
