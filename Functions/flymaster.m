@@ -132,6 +132,7 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
     % Load the video if it's not the first
     if vid_num > 1
         % Determine the name
+%         filename = [ filename( 1 : end - 5 ) , num2str( vid_num ) , filename( end - 3 : end )];
         filename = [ filename( 1 : end - 5 ) , num2str( vid_num ) , filename( end - 3 : end )];
 
         % Read the video

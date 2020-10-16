@@ -102,7 +102,7 @@ if printresult == 1
         if PC_or_not
             export_fig( fullfile( export_path, [ filename( 1 : end - 6 ) , '.pdf' ] ) , '-append' )
         else
-            saveas(101,fullfile( export_path, [ filename( 1 : end - 5 ) , num2str(plot_num) , '.pdf' ] ) )
+            saveas(101,fullfile( export_path, [ filename( 1 : end - 4 ) , '_', num2str(plot_num) , '.pdf' ] ) )
         end
         
         close 101

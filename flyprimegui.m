@@ -126,8 +126,10 @@ else
     delete(h)
     figure(99)
     imshow(Mov(:,:,handles.channel2choose))
-    croptangle=imrect;
-    position_manual=wait(croptangle);
+%     croptangle=imrect; % JP: this function is now buggy
+%     position_manual=wait(croptangle);
+    croptangle = drawrectangle; % drawrectangle automatically waits for user.
+    position_manual = croptangle.Position;
     close 99
     cropindex1_manual=round(position_manual(2));
     cropindex2_manual=round(position_manual(4))+round(position_manual(2));
