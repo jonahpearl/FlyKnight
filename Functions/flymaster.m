@@ -125,6 +125,9 @@ Flags_allvid_cell = { str2double( num_vids{ 1 } ) , 1 };
 % Prime a cell to record the frame numbers
 nframe_allvid_cell={ str2double( num_vids{ 1 } ) };
 
+% Pre allocate first vid backgrounds
+firstVid_backgrounds = cell(1, n_arenas);
+    
 % For each video
 for vid_num = 1 : str2double( num_vids{ 1 } )
     % For non-first videos, determine their names and load the videos
@@ -154,7 +157,6 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
     
     % Prime the interfly distance and flag matrices
     inter_fly_dist = zeros( nframe_flyload , n_arenas );
-    
     Flags = zeros( nframe_flyload , n_arenas );    
 
     % Start processing each individual arena
@@ -175,11 +177,19 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
         nframe_flyload, firstframe2load, frames2skip, nVidFrame, vidDuration,...
         quietmode,cropindex1, cropindex2, cropindex3, cropindex4, cropindex1_manual, cropindex3_manual);
 
-        % Use flytrack to process the loaded file
-        [inter_fly_dist( : , arena_num), Flags( : , arena_num)] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode);
+        % Use flytrack to process the loaded file.
+        % On first vid, get background.
+        % On subsequent vids, take background from first vid.
+        if vid_num == 1
+            [inter_fly_dist( : , arena_num), Flags( : , arena_num), background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, -1);
+        else
+            [inter_fly_dist( : , arena_num), Flags( : , arena_num), background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, firstVid_backgrounds{arena_num});
+        end
+        
         
         if vid_num ==1
             arena_rank( cropindex3 : cropindex4 , cropindex1 : cropindex2 ) = arena_num; % Construct the arena_rank matrix only in the first video
+            firstVid_backgrounds{arena_num} = background; % store for use on subsequent videos
         end
 
     end

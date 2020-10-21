@@ -1,4 +1,4 @@
-function [inter_fly_dist, Flags] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode)
+function [inter_fly_dist, Flags, background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, backgroundInput)
 
 
 %%%%%%%%%%%%%%%% Flytrack %%%%%%%%%%%%%%%%%
@@ -86,8 +86,14 @@ end
 disp('===========================================')
 disp('Background Calculation')
 
-% Call flytrackbackground function to calculate the background
-background = flytrackbackground( Arena, FPS, nframe, settings_file );
+% If first video, call flytrackbackground function to calculate the background
+% If not first video, receives background from first video.
+
+if backgroundInput == -1
+    background = flytrackbackground( Arena, FPS, nframe, settings_file );
+else
+    background = backgroundInput;
+end
 
 %toc
 %}
