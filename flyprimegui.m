@@ -112,7 +112,10 @@ function loadvidbut_Callback(hObject, ~, handles)
 
 addpath(filepath);
 
-num_vids=inputdlg('Enter the number of videos','Number of Videos');
+num_vids=inputdlg("Enter the number of videos. " + ...
+    "Flyknight expects names like myVid_1.MP4, myVid_2.MP4, etc. " +...
+    "Specify first vid and num vids, and Flyknight auto-finds the others.",...
+    'Number of Videos');
 isgap=inputdlg('Gap/empty wells? (1=yes, 0=no)','Gaps/empty wells');
 if str2double(isgap{1})==0
     cropindex1_manual=5;
@@ -124,7 +127,9 @@ else
     VidObj = VideoReader(filename);
     Mov=read(VidObj,handles.firstframe2load);
     delete(h)
+    pause(0.5)
     figure(99)
+    pause(0.5)
     imshow(Mov(:,:,handles.channel2choose))
 %     croptangle=imrect; % JP: this function is now buggy
 %     position_manual=wait(croptangle);
