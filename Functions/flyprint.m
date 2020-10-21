@@ -57,13 +57,13 @@ if printresult == 1
                     % Label start and end times
                     tEnd = chains{ ( plot_num-1 ) * subplot_plan( 1 ) + subplot_num }( chain_ind , 2 );
                     tStart = chains{ ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num }( chain_ind,1 );
-                    text( tStart , 0.8 - 0.1*(chain_ind-1) ,...
-                        [ 'Start: ', num2str( round(10*(tStart)) / 10) , ' min' ] )
-                    text( tEnd, 0.8 - 0.1*(chain_ind-1),...
-                        [ 'End: ', num2str( round(10*(tEnd)) / 10) , ' min' ] )
+%                     text( tStart , 0.8 - 0.1*(chain_ind-1) ,...
+%                         [ 'Start: ', num2str( round(10*(tStart)) / 10) , ' min' ] )
+%                     text( tEnd, 0.8 - 0.1*(chain_ind-1),...
+%                         [ 'End: ', num2str( round(10*(tEnd)) / 10) , ' min' ] )
                     
                     % Write its length
-                    text( 1 + ( chain_ind - 1 ) * 20 , 0.9 ,...
+                    text( 1 + ( chain_ind - 1 ) * 20 , 1 - 0.1*chain_ind,...
                         [ 'Len: ', num2str( round(10*(tEnd - tStart)) / 10) , ' min' ] )
                 end
                 hold off
@@ -84,7 +84,7 @@ if printresult == 1
             ylim([0 1])
             
             % Label subplot title
-            title( [ filename( 1 : end - 4 ) , ', Arena ' , num2str( ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num ) ],...
+            title( [ filename( 1 : end - 6 ) , ', Arena ' , num2str( ( plot_num - 1 ) * subplot_plan( 1 ) + subplot_num ) ],...
                 'Interpreter', 'none')
 
         end
@@ -102,7 +102,7 @@ if printresult == 1
         if PC_or_not
             export_fig( fullfile( export_path, [ filename( 1 : end - 6 ) , '.pdf' ] ) , '-append' )
         else
-            saveas(101,fullfile( export_path, [ filename( 1 : end - 4 ) , '_', num2str(plot_num) , '.pdf' ] ) )
+            saveas(101,fullfile( export_path, [ filename( 1 : end - 6 ), num2str(plot_num) , '.pdf' ] ) )
         end
         
         close 101
