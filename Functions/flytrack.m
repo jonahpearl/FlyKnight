@@ -1,4 +1,4 @@
-function [inter_fly_dist, Flags] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode)
+function [inter_fly_dist, Flags, background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, backgroundInput)
 
 
 %%%%%%%%%%%%%%%% Flytrack %%%%%%%%%%%%%%%%%
@@ -31,20 +31,24 @@ disp('Initiation')
 
 
 % Determine the estimated size of a fly
-flysize = settings_file{9};
-flysize = str2double(flysize(strfind(flysize, ',')+1:end));
+% flysize = settings_file{9};
+% flysize = str2double(flysize(strfind(flysize, ',')+1:end));
+flysize = settings_file.data(4);
 
 % Determine the gamma for intensity thresholding
-gamma = settings_file{10};
-gamma = str2double(gamma(strfind(gamma, ',')+1:end));
+% gamma = settings_file{10};
+% gamma = str2double(gamma(strfind(gamma, ',')+1:end));
+gamma = settings_file.data(5);
 
 % Determine the threshold of bw thresholding
-custom_bw_threshold_modifier = settings_file{13};
-custom_bw_threshold_modifier = str2double(custom_bw_threshold_modifier(strfind(custom_bw_threshold_modifier, ',')+1:end));
+% custom_bw_threshold_modifier = settings_file{13};
+% custom_bw_threshold_modifier = str2double(custom_bw_threshold_modifier(strfind(custom_bw_threshold_modifier, ',')+1:end));
+custom_bw_threshold_modifier = settings_file.data(8);
 
 % Determine the area threshold for demooning
-demoon_cutoff = settings_file{14};
-demoon_cutoff = str2double(demoon_cutoff(strfind(demoon_cutoff, ',')+1:end));
+% demoon_cutoff = settings_file{14};
+% demoon_cutoff = str2double(demoon_cutoff(strfind(demoon_cutoff, ',')+1:end));
+demoon_cutoff = settings_file.data(9);
 
 
 % Get the dimensions fo the arena
@@ -82,8 +86,14 @@ end
 disp('===========================================')
 disp('Background Calculation')
 
-% Call flytrackbackground function to calculate the background
-background = flytrackbackground( Arena, FPS, nframe, settings_file );
+% If first video, call flytrackbackground function to calculate the background
+% If not first video, receives background from first video.
+
+if backgroundInput == -1
+    background = flytrackbackground( Arena, FPS, nframe, settings_file );
+else
+    background = backgroundInput;
+end
 
 %toc
 %}
@@ -247,11 +257,12 @@ disp('Designation')
 
 %% Visualization
 % The positions have not been re mapped after designation.
-%{
+
 %tic
 disp('===========================================')
 disp('Visualization')
 
+%{
 marker_layer=zeros(viddim);
 for i=1:nfly
     for j=1:nframe

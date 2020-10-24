@@ -5,40 +5,53 @@ tic
 disp('==================================')
 disp('Initiation')
 
+% Choose whether to favor speed or RAM.
+% Speedy: loads entire video (with many frames skipped) in flymaster. 
+%   Then for each arena, for each frame, pass to a cropping function.
+% RAM: does not ever load entire video. For each arena, for each frame,
+%   load the frame, crop it, store the image.
+speed_type = 'speedy'; % speedy or RAM
+
+
 % Label batch processing and read the batch processing parameter file 
-settings_file = importdata('flytrack_settings.csv');
+settings_file = importdata('flytrack_settings.xlsx');
 
 % General path of videos
-genvidpath = settings_file{1};
-genvidpath = genvidpath(strfind(genvidpath, ',')+1:end);
+% genvidpath = settings_file.textdata{1};
+% genvidpath = genvidpath(strfind(genvidpath, ',')+1:end);
+genvidpath = settings_file.textdata{1,2};
 
 % Export path of analysis
-export_path = settings_file{2};
-export_path = export_path(strfind(export_path, ',')+1:end);
+% export_path = settings_file.textdata{2};
+% export_path = export_path(strfind(export_path, ',')+1:end);
+export_path = settings_file.textdata{2,2};
 
 % Determine whether a computer is a PC or not
-PC_or_not = settings_file{3};
-PC_or_not = PC_or_not(strfind(PC_or_not, ',')+1:end)=='Y';
+% PC_or_not = settings_file.textdata{3};
+% PC_or_not = PC_or_not(strfind(PC_or_not, ',')+1:end)=='Y';
+PC_or_not = settings_file.textdata{3,2} == 'Y';
 
 % Determine whether the analysis will be run in quiet mode or not
-quietmode = settings_file{4};
-quietmode = quietmode(strfind(quietmode, ',')+1:end)=='Y';
+% quietmode = settings_file.textdata{4};
+% quietmode = quietmode(strfind(quietmode, ',')+1:end)=='Y';
+quietmode = settings_file.textdata{4,2} == 'Y';
 
 % Determine whether the results will be printed or not
-printresult = settings_file{5};
-printresult = printresult(strfind(printresult, ',')+1:end)=='Y';
+% printresult = settings_file.textdata{5};
+% printresult = printresult(strfind(printresult, ',')+1:end)=='Y';
+printresult = settings_file.textdata{5,2} == 'Y';
 
 % Determine the target FPS
-targetfps = settings_file{6};
-targetfps = str2double(targetfps(strfind(targetfps, ',')+1:end));
+targetfps = settings_file.data(1);
+% targetfps = str2double(targetfps(strfind(targetfps, ',')+1:end));
 
 % Determine which RGB channel to choose when tracking the videos
-channel2choose = settings_file{7};
-channel2choose = str2double(channel2choose(strfind(channel2choose, ',')+1:end));
+channel2choose = settings_file.data(2);
+% channel2choose = str2double(channel2choose(strfind(channel2choose, ',')+1:end));
 
 % Determine which frame in each video (in the video's fps to load first)
-firstframe2load = settings_file{8};
-firstframe2load = str2double(firstframe2load(strfind(firstframe2load, ',')+1:end));
+firstframe2load = settings_file.data(3);
+% firstframe2load = str2double(firstframe2load(strfind(firstframe2load, ',')+1:end));
 
 
 % Determine whether knight mode is on
@@ -120,6 +133,9 @@ Flags_allvid_cell = { str2double( num_vids{ 1 } ) , 1 };
 % Prime a cell to record the frame numbers
 nframe_allvid_cell={ str2double( num_vids{ 1 } ) };
 
+% Pre allocate first vid backgrounds
+firstVid_backgrounds = cell(1, n_arenas);
+    
 % For each video
 for vid_num = 1 : str2double( num_vids{ 1 } )
     % For non-first videos, determine their names and load the videos
@@ -127,6 +143,7 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
     % Load the video if it's not the first
     if vid_num > 1
         % Determine the name
+%         filename = [ filename( 1 : end - 5 ) , num2str( vid_num ) , filename( end - 3 : end )];
         filename = [ filename( 1 : end - 5 ) , num2str( vid_num ) , filename( end - 3 : end )];
 
         % Read the video
@@ -148,9 +165,17 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
     
     % Prime the interfly distance and flag matrices
     inter_fly_dist = zeros( nframe_flyload , n_arenas );
-    
     Flags = zeros( nframe_flyload , n_arenas );    
 
+    % === Begin differences between speed_types speedy and RAM ===
+    
+    % If speedy mode, load entire video.
+    % FullMov is nrow x ncol x num frames.
+    if strcmp(speed_type, 'speedy')
+        [FullMov, FPS] = flyloadspeedyvid(VidObj, channel2choose,...
+            nframe_flyload, firstframe2load, frames2skip, nVidFrame, vidDuration);
+    end
+    
     % Start processing each individual arena
     for arena_num = 1 : n_arenas
         % For each arena, figure out how to crop it out of the fly universe
@@ -163,17 +188,49 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
         cropindex4 = max( floor( max( ...
             flyuniverse_props( arena_num ).Extrema(: , 2)) + arena_margin) , 1);
 
-        % Use fly load to load the frames into RAM
-        [Arena, FPS] = ...
-        flyload(VidObj, channel2choose,...
-        nframe_flyload, firstframe2load, frames2skip, nVidFrame, vidDuration,...
-        quietmode,cropindex1, cropindex2, cropindex3, cropindex4, cropindex1_manual, cropindex3_manual);
+        % If RAM saver mode, use fly load to load the frames into RAM
+        if strcmp(speed_type, 'RAM')
+            [Arena, FPS] = ...
+            flyload(VidObj, channel2choose,...
+            nframe_flyload, firstframe2load, frames2skip, nVidFrame, vidDuration,...
+            quietmode,cropindex1, cropindex2, cropindex3, cropindex4, cropindex1_manual, cropindex3_manual);
+        
+        % If speedy mode, the entire video is already loaded and inverted in the
+        % variable FullMov. Just need to crop each frame.
+        elseif strcmp(speed_type, 'speedy')
+            
+            % Determine the arena height and width
+            arena_height = cropindex4 - cropindex3;
+            arena_width = cropindex2 - cropindex1;
+            
+            % Pre-allocate Arena matrix
+            Arena = uint8(zeros(arena_height, arena_width, nframe_flyload));
+            
+            % Crop each frame
+            for iFrame = 1:size(FullMov, 3)    
+                Arena(:,:,iFrame) = ...
+                    FullMov(cropindex3 + cropindex1_manual : cropindex4 + cropindex1_manual - 1 ,...
+                    cropindex1 + cropindex3_manual : cropindex2 + cropindex3_manual - 1,...
+                    iFrame);
+            end
+        end
 
-        % Use flytrack to process the loaded file
-        [inter_fly_dist( : , arena_num), Flags( : , arena_num)] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode);
+        % === End of differences between speed_types speedy and RAM ===
+        
+        
+        % Use flytrack to process the loaded file.
+        % On first vid, get background.
+        % On subsequent vids, take background from first vid.
+        if vid_num == 1
+            [inter_fly_dist( : , arena_num), Flags( : , arena_num), background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, -1);
+        else
+            [inter_fly_dist( : , arena_num), Flags( : , arena_num), background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, firstVid_backgrounds{arena_num});
+        end
+        
         
         if vid_num ==1
             arena_rank( cropindex3 : cropindex4 , cropindex1 : cropindex2 ) = arena_num; % Construct the arena_rank matrix only in the first video
+            firstVid_backgrounds{arena_num} = background; % store for use on subsequent videos
         end
 
     end

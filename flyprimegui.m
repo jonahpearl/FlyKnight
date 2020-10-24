@@ -57,11 +57,15 @@ handles.mac=getmac;
 % end
 
 % Load the setting file
-settings_file = importdata('flytrack_settings.csv');
+% settings_file = importdata('flytrack_settings.csv');
+settings_file = importdata('flytrack_settings.xlsx');
+% settings_file = importdata('settings_file.mat');
 
 % General path of videos
-genvidpath = settings_file{1};
-handles.genvidpath = genvidpath(strfind(genvidpath, ',')+1:end);
+% genvidpath = settings_file.textdata{1};
+% handles.genvidpath = genvidpath(strfind(genvidpath, ',')+1:end);
+genvidpath = settings_file.textdata{1,2};
+handles.genvidpath = genvidpath;
 
 YesNo = evalin('base','exist(''run_list'',''var'')');
 handles.firstframe2load=100;
@@ -108,7 +112,10 @@ function loadvidbut_Callback(hObject, ~, handles)
 
 addpath(filepath);
 
-num_vids=inputdlg('Enter the number of videos','Number of Videos');
+num_vids=inputdlg("Enter the number of videos. " + ...
+    "Flyknight expects names like myVid_1.MP4, myVid_2.MP4, etc. " +...
+    "Specify first vid and num vids, and Flyknight auto-finds the others.",...
+    'Number of Videos');
 isgap=inputdlg('Gap/empty wells? (1=yes, 0=no)','Gaps/empty wells');
 if str2double(isgap{1})==0
     cropindex1_manual=5;
@@ -120,15 +127,26 @@ else
     VidObj = VideoReader(filename);
     Mov=read(VidObj,handles.firstframe2load);
     delete(h)
+    pause(0.5)
     figure(99)
+    pause(0.5)
     imshow(Mov(:,:,handles.channel2choose))
-    croptangle=imrect;
-    position_manual=wait(croptangle);
+%     croptangle=imrect; % JP: this function is now buggy
+%     position_manual=wait(croptangle);
+    croptangle = drawrectangle; % drawrectangle automatically waits for user.
+    position_manual = croptangle.Position;
     close 99
     cropindex1_manual=round(position_manual(2));
     cropindex2_manual=round(position_manual(4))+round(position_manual(2));
     cropindex3_manual=round(position_manual(1));
     cropindex4_manual=round(position_manual(3))+round(position_manual(1));
+    
+    % check for bad crop indices (if user draws rectangle too close to
+    % edge)
+    if cropindex1_manual <= 0
+        fprintf('cropindex1_manual outside bounds...setting to 1 \n')
+        cropindex1_manual = 1;
+    end
 end
 
 
