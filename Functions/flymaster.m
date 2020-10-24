@@ -5,6 +5,14 @@ tic
 disp('==================================')
 disp('Initiation')
 
+% Choose whether to favor speed or RAM.
+% Speedy: loads entire video (with many frames skipped) in flymaster. 
+%   Then for each arena, for each frame, pass to a cropping function.
+% RAM: does not ever load entire video. For each arena, for each frame,
+%   load the frame, crop it, store the image.
+speed_type = 'speedy'; % speedy or RAM
+
+
 % Label batch processing and read the batch processing parameter file 
 settings_file = importdata('flytrack_settings.xlsx');
 
@@ -159,6 +167,15 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
     inter_fly_dist = zeros( nframe_flyload , n_arenas );
     Flags = zeros( nframe_flyload , n_arenas );    
 
+    % === Begin differences between speed_types speedy and RAM ===
+    
+    % If speedy mode, load entire video.
+    % FullMov is nrow x ncol x num frames.
+    if strcmp(speed_type, 'speedy')
+        [FullMov, FPS] = flyloadspeedyvid(VidObj, channel2choose,...
+            nframe_flyload, firstframe2load, frames2skip, nVidFrame, vidDuration);
+    end
+    
     % Start processing each individual arena
     for arena_num = 1 : n_arenas
         % For each arena, figure out how to crop it out of the fly universe
@@ -171,12 +188,36 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
         cropindex4 = max( floor( max( ...
             flyuniverse_props( arena_num ).Extrema(: , 2)) + arena_margin) , 1);
 
-        % Use fly load to load the frames into RAM
-        [Arena, FPS] = ...
-        flyload(VidObj, channel2choose,...
-        nframe_flyload, firstframe2load, frames2skip, nVidFrame, vidDuration,...
-        quietmode,cropindex1, cropindex2, cropindex3, cropindex4, cropindex1_manual, cropindex3_manual);
+        % If RAM saver mode, use fly load to load the frames into RAM
+        if strcmp(speed_type, 'RAM')
+            [Arena, FPS] = ...
+            flyload(VidObj, channel2choose,...
+            nframe_flyload, firstframe2load, frames2skip, nVidFrame, vidDuration,...
+            quietmode,cropindex1, cropindex2, cropindex3, cropindex4, cropindex1_manual, cropindex3_manual);
+        
+        % If speedy mode, the entire video is already loaded and inverted in the
+        % variable FullMov. Just need to crop each frame.
+        elseif strcmp(speed_type, 'speedy')
+            
+            % Determine the arena height and width
+            arena_height = cropindex4 - cropindex3;
+            arena_width = cropindex2 - cropindex1;
+            
+            % Pre-allocate Arena matrix
+            Arena = uint8(zeros(arena_height, arena_width, nframe_flyload));
+            
+            % Crop each frame
+            for iFrame = 1:size(FullMov, 3)    
+                Arena(:,:,iFrame) = ...
+                    FullMov(cropindex3 + cropindex1_manual : cropindex4 + cropindex1_manual - 1 ,...
+                    cropindex1 + cropindex3_manual : cropindex2 + cropindex3_manual - 1,...
+                    iFrame);
+            end
+        end
 
+        % === End of differences between speed_types speedy and RAM ===
+        
+        
         % Use flytrack to process the loaded file.
         % On first vid, get background.
         % On subsequent vids, take background from first vid.

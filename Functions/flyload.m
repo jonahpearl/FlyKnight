@@ -65,7 +65,6 @@ arena_width = cropindex2 - cropindex1;
 % (Outside this function, for each Arena)
 % For each frame, get full frame and crop it to this arena.
 Arena = uint8(ones(arena_height , arena_width , nframe_flyload));
-mmmm = 2; % test for Git.
 for i = firstframe2load : frames2skip : nVidFrame
     Mov = read(VidObj , i);
     Mov_singlechannel=Mov(:,:,channel2choose);
