@@ -38,7 +38,7 @@ flysize = settings_file.data(4);
 % Determine the gamma for intensity thresholding
 % gamma = settings_file{10};
 % gamma = str2double(gamma(strfind(gamma, ',')+1:end));
-gamma = settings_file.data(5);
+gamma = settings_file.data(5); % 5 for lightpad, 2 for heatrig
 
 % Determine the threshold of bw thresholding
 % custom_bw_threshold_modifier = settings_file{13};
@@ -49,6 +49,9 @@ custom_bw_threshold_modifier = settings_file.data(8);
 % demoon_cutoff = settings_file{14};
 % demoon_cutoff = str2double(demoon_cutoff(strfind(demoon_cutoff, ',')+1:end));
 demoon_cutoff = settings_file.data(9);
+
+% Pixels per cm, from settings file
+pixel_per_cm = settings_file.data(14); % 108 for lightpad, 96 for heatright
 
 
 % Get the dimensions fo the arena
@@ -130,10 +133,14 @@ if quietmode == 0
 end
 
 for i=1:nframe
+%     tic
     % Subtract the background and threshold the frame
     arena_rev_nbg_bw = flytrackbw( Arena, i, background, gamma, custom_bw_threshold_modifier);
     
-    % remove the moon-shaped ring before erosion
+    % Remove the moon-shaped ring before erosion
+    % JP notes: this sometimes creates an issue when fly is touching the
+    % edge of the arena, so one or both flies are removed along with the
+    % "moon" (the edge of the arena).
     [ arena_rev_nbg_bw, Flags(i) ] = flytrackdemoon( arena_rev_nbg_bw, demoon_cutoff);
     
     % Erode the images (get rid of small shades) and label them
@@ -191,6 +198,8 @@ for i=1:nframe
     if quietmode==0
         waitbar(i/nframe,dispbar)
     end
+    
+%     toc
 end
 % arena_rev_nbg_bw_erode_lb=uint8(arena_rev_nbg_bw_erode_lb); % If this
 % matrix is outputed, then uint8 is suggested to reduce memory usage
@@ -262,7 +271,7 @@ disp('Designation')
 disp('===========================================')
 disp('Visualization')
 
-%{
+% 
 marker_layer=zeros(viddim);
 for i=1:nfly
     for j=1:nframe
@@ -273,7 +282,7 @@ end
 combined_layer=mat2gray(Arena)+marker_layer;
 implay(combined_layer,FPS*50)
 %toc
-%}
+
 
 %% 2nd Order Data
 %
@@ -291,7 +300,7 @@ calibration_pixels=sqrt(delta_position(1).^2+delta_position(2).^2);
 pixel_per_cm=calibration_pixels/calibration_line_length;
 close 99
 %}
-pixel_per_cm=108;
+
 
 %cm_per_pixel= ; % Direct Input is fine too
 

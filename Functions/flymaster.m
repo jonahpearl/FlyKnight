@@ -11,10 +11,14 @@ disp('Initiation')
 % RAM: does not ever load entire video. For each arena, for each frame,
 %   load the frame, crop it, store the image.
 speed_type = 'speedy'; % speedy or RAM
-
+video_type = 'heatrig'; % lightpad or heatrig
 
 % Label batch processing and read the batch processing parameter file 
-settings_file = importdata('flytrack_settings.xlsx');
+if strcmp(video_type, 'lightpad')
+    settings_file = importdata('flytrack_settings.xlsx');
+elseif strcmp(video_type, 'heatrig')
+    settings_file = importdata('flytrack_settings_HEATRIG.xlsx');
+end
 
 % General path of videos
 % genvidpath = settings_file.textdata{1};
