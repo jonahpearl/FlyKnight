@@ -3,7 +3,7 @@ function [FullMov, FPS] = ...
     nframe_flyload, firstframe2load, frames2skip, nVidFrame, vidDuration)
 
 disp('==================================')
-disp('Loading Data')
+disp('Loading Video Data')
 
 % Read first frame to get size of video
 firstFrame = read(VidObj , 1);
@@ -23,7 +23,7 @@ endframe = i;
 
 %% Processing
 disp('==================================')
-disp('Processing')
+disp('Flipping b/w')
 
 for i = 1 : nframe_flyload
     % Reverse the arena
