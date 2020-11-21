@@ -7,14 +7,14 @@ disp('Initiation')
 
 % Choose whether to favor speed or RAM.
 % Speedy: loads entire video (with many frames skipped) in flymaster. 
-%   Then for each arena, for each frame, pass to a cropping function.
+%   Then for each arena, for each frame, crop it.
 % RAM: does not ever load entire video. For each arena, for each frame,
 %   load the frame, crop it, store the image.
 speed_type = 'speedy'; % speedy or RAM
 
 
 % Label batch processing and read the batch processing parameter file 
-settings_file = importdata('flytrack_settings.xlsx');
+settings_file = importdata('flytrack_distanceTracker_settings.xlsx');
 
 % General path of videos
 % genvidpath = settings_file.textdata{1};
@@ -126,6 +126,7 @@ arena_rank = zeros( size( flyuniverse ) );
 % Prime a cell recording the inter-fly distances of all arenas in all
 % videos
 inter_fly_dist_allvid_cell = cell( str2double( num_vids{ 1 } ) , 1 );
+fly_speeds_allvid_cell = cell( str2double( num_vids{ 1 } ) , 1 );
 
 % Prime a cell of flags recording what happened to each frame of analysis
 Flags_allvid_cell = { str2double( num_vids{ 1 } ) , 1 };
@@ -165,6 +166,7 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
     
     % Prime the interfly distance and flag matrices
     inter_fly_dist = zeros( nframe_flyload , n_arenas );
+    fly_speeds = zeros(nframe_flyload - 1, 2, n_arenas );
     Flags = zeros( nframe_flyload , n_arenas );    
 
     % === Begin differences between speed_types speedy and RAM ===
@@ -222,9 +224,15 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
         % On first vid, get background.
         % On subsequent vids, take background from first vid.
         if vid_num == 1
-            [inter_fly_dist( : , arena_num), Flags( : , arena_num), background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, -1);
+            [inter_fly_dist( : , arena_num), Flags( : , arena_num),...
+                background, fly_speeds(:,:, arena_num)] = ...
+            flytrack(Arena, FPS, vid_num, arena_num, settings_file,...
+                    quietmode, -1);
         else
-            [inter_fly_dist( : , arena_num), Flags( : , arena_num), background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, firstVid_backgrounds{arena_num});
+            [inter_fly_dist( : , arena_num), Flags( : , arena_num),...
+                background, fly_speeds(:,:, arena_num)] = ...
+            flytrack(Arena, FPS, vid_num, arena_num, settings_file,...
+                    quietmode, firstVid_backgrounds{arena_num});
         end
         
         
@@ -239,6 +247,7 @@ for vid_num = 1 : str2double( num_vids{ 1 } )
     inter_fly_dist_allvid_cell{ vid_num } = inter_fly_dist;
     Flags_allvid_cell{ vid_num } = Flags;
     nframe_allvid_cell{ vid_num } = nframe_flyload;
+    fly_speeds_allvid_cell{vid_num} = fly_speeds;
 end
 %toc
 
@@ -254,16 +263,21 @@ nframe_allvid = cumsum( cell2mat( nframe_allvid_cell ) );
 inter_fly_dist_allvid = zeros( nframe_allvid( end ) , n_arenas );
 Flags_allvid = zeros( nframe_allvid( end ) , n_arenas );
 
+% Same calculation but for fly speeds, off by one for each vid because of diff
+flySpeeds_allvid = zeros( nframe_allvid( end ) - str2double( num_vids{ 1 } ), n_arenas );
+
 for vid_num = 1 : str2double( num_vids{ 1 } )
     % For the first video the index is calculated differently from the rest
     if vid_num == 1
         % Load the first video's data into the total data
         inter_fly_dist_allvid( 1 : nframe_allvid( vid_num ), : ) = inter_fly_dist_allvid_cell{vid_num};
         Flags_allvid( 1 : nframe_allvid( vid_num ), : ) = Flags_allvid_cell{ vid_num };
+        flySpeeds_allvid(1:nframe_allvid( vid_num ) - vid_num, :) = fly_speeds_allvid_cell{vid_num};
     else
         % Load the subsequent video's data into the total data
         inter_fly_dist_allvid( nframe_allvid( vid_num - 1 ) + 1 : nframe_allvid( vid_num ), : ) = inter_fly_dist_allvid_cell{ vid_num };
         Flags_allvid( nframe_allvid( vid_num - 1 ) + 1 : nframe_allvid( vid_num ), : ) = Flags_allvid_cell{ vid_num };
+        flySpeeds_allvid(nframe_allvid( vid_num - 1) - vid_num + 1:nframe_allvid( vid_num ) - vid_num, :) = fly_speeds_allvid_cell{vid_num};
     end
 end
 
@@ -273,6 +287,7 @@ ranking2 = flyarenarank( arena_rank, n_arenas );
 % Apply the ranking
 inter_fly_dist_allvid_sorted=inter_fly_dist_allvid( : , ranking2 );
 Flags_allvid_sorted=Flags_allvid( : , ranking2 );
+flySpeeds_allvid_sorted = flySpeeds_allvid(:, ranking2);
 
 %trace_data_mat_sorted=zeros(size(trace_data_mat));
 % for i=2:2:size(trace_data_mat,2)

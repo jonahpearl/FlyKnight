@@ -10,7 +10,7 @@ firstFrame = read(VidObj , 1);
 [nrow, ncol, ~] = size(firstFrame); % don't need 3rd dim, which is RGB channels
 
 % pre-allocate frame-size x num frames matrix
-FullMov = uint8(ones(nrow, ncol, nframe_flyload));
+FullMov = ones(nrow, ncol, nframe_flyload, 'uint8');
 
 for i = firstframe2load : frames2skip : nVidFrame
     Mov = read(VidObj , i);

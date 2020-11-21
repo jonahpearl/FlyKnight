@@ -1,4 +1,4 @@
-function [inter_fly_dist, Flags, background] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, backgroundInput)
+function [inter_fly_dist, Flags, background, speeds] = flytrack(Arena, FPS, vid_num, arena_num, settings_file, quietmode, backgroundInput)
 
 
 %%%%%%%%%%%%%%%% Flytrack %%%%%%%%%%%%%%%%%
@@ -240,6 +240,8 @@ disp('===========================================')
 disp('Designation')
 
 %tic
+
+% Centroids mats are (nframes x (x,y) x nflies)
 [ CentroidsA, CentroidsB, ~, ~ ] = flytrackdesignation( Centroids, nframe );
 % AreaA=sum(Area.*FlyA,2);
 % AreaB=sum(Area.*FlyB,2);
@@ -262,18 +264,23 @@ disp('Designation')
 disp('===========================================')
 disp('Visualization')
 
-%{
+
 marker_layer=zeros(viddim);
 for i=1:nfly
     for j=1:nframe
-        marker_layer(Centroids(j,2,i),Centroids(j,1,i),j)=1; % (y,x) because on a image, down means y increases (counterintuitive from matrix)
+        if i == 1
+            marker_layer(Centroids(j,2,i),Centroids(j,1,i),j)=1; % (y,x) because on a image, down means y increases (counterintuitive from matrix)
+        elseif i == 2
+            marker_layer(Centroids(j,2,i),Centroids(j,1,i),j)=1;
+            marker_layer(Centroids(j,2,i)+1,Centroids(j,1,i),j)=1;
+        end
     end
 end
 
 combined_layer=mat2gray(Arena)+marker_layer;
 implay(combined_layer,FPS*50)
 %toc
-%}
+
 
 %% 2nd Order Data
 %
@@ -337,7 +344,6 @@ title('Filtered distance')
 
 
 % Calculate Speeds (need fly designation)
-%{
 centroid_delta_temporal_A=diff(CentroidsA);
 centroid_delta_temporal_B=diff(CentroidsB);
 speeds=ones(nframe-1,nfly).*NaN;
@@ -346,18 +352,15 @@ speeds(:,2)=sqrt(centroid_delta_temporal_B(:,1).^2+centroid_delta_temporal_B(:,2
 %
 
 % Plot Speeds
-%
 figure
-plot((1:nframe-1)/FPS/60,speeds(:,1),(1:nframe-1)/FPS/60,speeds(:,2))
+% plot((1:nframe-1)/FPS/60,speeds(:,1),(1:nframe-1)/FPS/60,speeds(:,2)) % time on x
+plot((1:nframe-1),speeds(:,1),(1:nframe-1),speeds(:,2)) % frame num on x
 xlabel('Time/min')
 ylabel('speeds/cm*s^-^1')
 title('speed')
 legend('FlyA','FlyB')
 
-%}
-
 %toc
-%}
 
 
 
