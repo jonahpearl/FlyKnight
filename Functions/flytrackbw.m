@@ -9,9 +9,13 @@ arena_rev_nbg = Arena(:,:,ij) - background;
 arena_rev_nbg = imadjust(arena_rev_nbg, [0 0.5],[0 1],gamma); % Re-adjust gamma. Numbers can be optimized.
 
 % Use X times stdev above the mean to threshold
-arena_rev_nbg_bw = im2bw(arena_rev_nbg ,...
-custom_bw_threshold_modifier * std( reshape( mat2gray( arena_rev_nbg ) , 1 , [] ))...
-+ mean( reshape( mat2gray( arena_rev_nbg ) , 1 , [] )));
+try
+    arena_rev_nbg_bw = im2bw(arena_rev_nbg ,...
+    custom_bw_threshold_modifier * std( reshape( mat2gray( arena_rev_nbg ) , 1 , [] ))...
+    + mean( reshape( mat2gray( arena_rev_nbg ) , 1 , [] )));
+catch
+    arena_rev_nbg_bw = imbinarize(arena_rev_nbg);
+end
 
 end
 
